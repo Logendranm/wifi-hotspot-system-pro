@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}User Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2><i class="fas fa-tachometer-alt me-2"></i>User Dashboard</h2>
+    </div>
+</div>
+
+<!-- Balance Cards -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Data Balance</h5>
+                        <h3 id="dataBalance">{{ user.data_balance_formatted }}</h3>
+                    </div>
+                    <i class="fas fa-database fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Time Balance</h5>
+                        <h3 id="timeBalance">{{ user.time_balance_formatted }}</h3>
+                    </div>
+                    <i class="fas fa-clock fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Session Control -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-play-circle me-2"></i>Session Control</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div id="sessionStatus" class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>No active session
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <button id="startSessionBtn" class="btn btn-success w-100" onclick="startSession()">
+                            <i class="fas fa-play me-1"></i>Start Session
+                        </button>
+                        <button id="stopSessionBtn" class="btn btn-danger w-100" onclick="stopSession()" style="display: none;">
+                            <i class="fas fa-stop me-1"></i>Stop Session
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Available Plans -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-list me-2"></i>Available Plans</h5>
+            </div>
+            <div class="card-body">
+                <div class="row" id="plansList">
+                    <div class="col-12 text-center">
+                        <button class="btn btn-outline-primary" onclick="loadPlans()">
+                            <i class="fas fa-refresh me-1"></i>Load Available Plans
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recharge Modal -->
+<div class="modal fade" id="rechargeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Recharge Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="rechargeForm" method="POST" action="{{ url_for('user.recharge') }}">
+                <div class="modal-body">
+                    <input type="hidden" id="selectedPlanId" name="plan_id">
+                    <div id="planDetails"></div>
+                    <div class="mb-3">
+                        <label for="paymentMethod" class="form-label">Payment Method</label>
+                        <select class="form-select" id="paymentMethod" name="payment_method" required>
+                            <option value="online">Online Payment (Demo)</option>
+                            <option value="cash">Cash Payment</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-credit-card me-1"></i>Recharge Now
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/user.js') }}"></script>
+{% endblock %}

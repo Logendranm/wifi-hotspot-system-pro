@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Vouchers{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-ticket-alt me-2"></i>Manage Vouchers</h2>
+    <div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#generateVoucherModal">
+            <i class="fas fa-plus me-1"></i>Generate Vouchers
+        </button>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Voucher Code</th>
+                        <th>Plan</th>
+                        <th>Status</th>
+                        <th>Used By</th>
+                        <th>Created</th>
+                        <th>Used At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for voucher in vouchers %}
+                    <tr>
+                        <td><code>{{ voucher.code }}</code></td>
+                        <td>{{ voucher.plan_name or 'N/A' }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if voucher.status == 'unused' else ('warning' if voucher.status == 'used' else 'danger') }}">
+                                {{ voucher.status.title() }}
+                            </span>
+                        </td>
+                        <td>{{ voucher.username or '-' }}</td>
+                        <td>{{ voucher.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ voucher.used_at.strftime('%Y-%m-%d %H:%M') if voucher.used_at else '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Generate Voucher Modal -->
+<div class="modal fade" id="generateVoucherModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Generate Vouchers</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('admin.generate_vouchers') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="plan_id" class="form-label">Select Plan</label>
+                        <select class="form-select" id="plan_id" name="plan_id" required>
+                            <option value="">Choose a plan...</option>
+                            {% for plan in plans %}
+                            <option value="{{ plan.id }}">{{ plan.name }} - ₹{{ "%.2f"|format(plan.price) }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">Quantity</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity" min="1" max="100" value="1" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Generate Vouchers</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

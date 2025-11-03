@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Wi-Fi Hotspot Management{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <i class="fas fa-wifi fa-3x text-primary"></i>
+                    <h3 class="mt-2">Wi-Fi Hotspot</h3>
+                </div>
+                
+                <!-- Login Tabs -->
+                <ul class="nav nav-tabs" id="loginTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button">
+                            <i class="fas fa-lock me-1"></i>Password
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="voucher-tab" data-bs-toggle="tab" data-bs-target="#voucher" type="button">
+                            <i class="fas fa-ticket-alt me-1"></i>Voucher
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button">
+                            <i class="fas fa-user-plus me-1"></i>Register
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content mt-3" id="loginTabsContent">
+                    <!-- Password Login -->
+                    <div class="tab-pane fade show active" id="password" role="tabpanel">
+                        <form method="POST" action="{{ url_for('auth.login') }}">
+                            <input type="hidden" name="login_type" value="password">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username or Email</label>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-sign-in-alt me-1"></i>Login
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Voucher Login -->
+                    <div class="tab-pane fade" id="voucher" role="tabpanel">
+                        <form method="POST" action="{{ url_for('auth.login') }}">
+                            <input type="hidden" name="login_type" value="voucher">
+                            <div class="mb-3">
+                                <label for="voucher_code" class="form-label">Voucher Code</label>
+                                <input type="text" class="form-control" id="voucher_code" name="voucher_code" 
+                                       placeholder="Enter voucher code" required>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-ticket-alt me-1"></i>Use Voucher
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Register -->
+                    <div class="tab-pane fade" id="register" role="tabpanel">
+                        <form method="POST" action="{{ url_for('auth.register') }}">
+                            <div class="mb-3">
+                                <label for="reg_username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="reg_username" name="username" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="reg_email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="reg_email" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="reg_phone" class="form-label">Phone (Optional)</label>
+                                <input type="tel" class="form-control" id="reg_phone" name="phone">
+                            </div>
+                            <div class="mb-3">
+                                <label for="reg_password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="reg_password" name="password" required>
+                            </div>
+                            <button type="submit" class="btn btn-info w-100">
+                                <i class="fas fa-user-plus me-1"></i>Register
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Admin Registration Link -->
+                <div class="text-center mt-3">
+                    <p class="text-muted mb-1">Want to register as an Admin?</p>
+                    <a href="{{ url_for('auth.admin_register') }}" class="btn btn-outline-danger btn-sm">
+                        <i class="fas fa-user-shield me-1"></i>Create Admin Account
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
