@@ -1,0 +1,63 @@
+/* Admin Dashboard Specific Styles */
+.admin-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem 0;
+}
+
+.stats-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+}
+
+.quick-action-card {
+    border-left: 4px solid var(--primary-color);
+}
+
+/* Chart containers */
+.chart-container {
+    position: relative;
+    height: 300px;
+}
+
+/* Admin table styles */
+.admin-table {
+    font-size: 0.9rem;
+}
+
+.admin-table th {
+    background-color: var(--light-color);
+    font-weight: 600;
+}
+
+/* Status badges */
+.status-active {
+    background-color: var(--success-color) !important;
+}
+
+.status-inactive {
+    background-color: var(--warning-color) !important;
+}
+
+.status-suspended {
+    background-color: var(--danger-color) !important;
+}
+
+/* Action buttons */
+.action-buttons .btn {
+    margin: 0 2px;
+}
+
+/* Modal styles */
+.modal-header {
+    border-bottom: 2px solid var(--primary-color);
+}
+
+/* Form styles */
+.form-label {
+    font-weight: 600;
+    color: var(--dark-color);
+}
