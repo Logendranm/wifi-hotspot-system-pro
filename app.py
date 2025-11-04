@@ -1,36 +1,58 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
-import os
-
+from flask_mysqldb import MySQL
 from config import Config
+
+# Import blueprints
 from auth import auth_bp
-from user import user_bp
 from admin import admin_bp
+from user import user_bp
+
+# ------------------------------------------------------------
+# APP INITIALIZATION
+# ------------------------------------------------------------
+app = Flask(__name__,
+            static_folder='frontend/static',
+            template_folder='frontend/templates')
+
+# Load configuration
+app.config.from_object(Config)
+
+# Initialize extensions
+CORS(app)
+jwt = JWTManager(app)
+mysql = MySQL(app)
+
+# ------------------------------------------------------------
+# REGISTER BLUEPRINTS
+# ------------------------------------------------------------
+app.register_blueprint(auth_bp, url_prefix='/')
+app.register_blueprint(admin_bp, url_prefix='/admin')
+app.register_blueprint(user_bp, url_prefix='/user')
+
+# ------------------------------------------------------------
+# DEFAULT ROUTE
+# ------------------------------------------------------------
+@app.route('/')
+def home():
+    return render_template('login.html')
+
+# ------------------------------------------------------------
+# ERROR HANDLERS (Optional but clean)
+# ------------------------------------------------------------
+@app.errorhandler(404)
+def not_found(e):
+    return render_template('404.html'), 404
 
 
-def create_app():
-    app = Flask(__name__, template_folder='templates', static_folder='static')
-    app.config.from_object(Config)
-
-    CORS(app)
-    jwt = JWTManager(app)
-
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(user_bp, url_prefix='/user')
-    app.register_blueprint(admin_bp, url_prefix='/admin')
-
-    # Upload folder setup
-    upload_folder = app.config.get('UPLOAD_FOLDER', 'uploads')
-    if not os.path.exists(upload_folder):
-        os.makedirs(upload_folder)
-
-    return app
+@app.errorhandler(500)
+def internal_error(e):
+    return render_template('500.html'), 500
 
 
-# gunicorn entry
-app = create_app()
-
+# ------------------------------------------------------------
+# MAIN ENTRY POINT
+# ------------------------------------------------------------
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=True)
