@@ -1,51 +1,98 @@
-import bcrypt
-import secrets
+import os
+import hashlib
+import datetime
+import random
 import string
-from datetime import datetime, timedelta
+from werkzeug.security import generate_password_hash, check_password_hash
 from models import get_db_connection
 
+
+# ----------------------------------------------------------
+# PASSWORD HASHING
+# ----------------------------------------------------------
 def hash_password(password):
-    """Hash password using bcrypt"""
-    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    """Generate secure password hash."""
+    return generate_password_hash(password)
 
-def verify_password(password, hashed_password):
-    """Verify password against hash"""
-    return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
 
-def generate_voucher_code():
-    """Generate random voucher code"""
-    return 'WIFI' + ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(8))
+def verify_password(password, password_hash):
+    """Verify hashed password."""
+    return check_password_hash(password_hash, password)
 
-def log_action(user_id, action, details=None, ip_address=None):
-    """Log user action"""
+
+# ----------------------------------------------------------
+# LOGGING USER ACTIONS
+# ----------------------------------------------------------
+def log_action(user_id, action, description, ip_address=None):
+    """Log user or admin actions."""
     conn = get_db_connection()
+    if not conn:
+        print("[LOG ERROR] DB connection failed.")
+        return
+
     cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO logs (user_id, action, details, ip_address) VALUES (%s, %s, %s, %s)",
-        (user_id, action, details, ip_address)
-    )
-    conn.close()
+    try:
+        sql = """
+            INSERT INTO logs (user_id, action, description, ip_address, timestamp)
+            VALUES (%s, %s, %s, %s, NOW())
+        """
+        cursor.execute(sql, (user_id, action, description, ip_address))
+        conn.commit()
+    except Exception as e:
+        print(f"[LOG ERROR] Failed to log action: {e}")
+    finally:
+        conn.close()
 
-def format_data_size(bytes_value):
-    """Format bytes to human readable format"""
-    if bytes_value < 1024:
-        return f"{bytes_value} B"
-    elif bytes_value < 1024 * 1024:
-        return f"{bytes_value / 1024:.2f} KB"
-    elif bytes_value < 1024 * 1024 * 1024:
-        return f"{bytes_value / (1024 * 1024):.2f} MB"
-    else:
-        return f"{bytes_value / (1024 * 1024 * 1024):.2f} GB"
 
-def format_time_duration(minutes):
-    """Format minutes to human readable format"""
-    if minutes < 60:
-        return f"{minutes} min"
-    elif minutes < 1440:  # 24 hours
-        hours = minutes // 60
-        remaining_minutes = minutes % 60
-        return f"{hours}h {remaining_minutes}m"
-    else:
-        days = minutes // 1440
-        remaining_hours = (minutes % 1440) // 60
-        return f"{days}d {remaining_hours}h"
+# ----------------------------------------------------------
+# VOUCHER CODE GENERATION
+# ----------------------------------------------------------
+def generate_voucher_code(length=10):
+    """Generate random alphanumeric voucher code."""
+    characters = string.ascii_uppercase + string.digits
+    code = ''.join(random.choice(characters) for _ in range(length))
+    return code
+
+
+# ----------------------------------------------------------
+# FORMAT DATA SIZE (MB, GB)
+# ----------------------------------------------------------
+def format_data_size(size_in_bytes):
+    """Format data size into readable MB/GB."""
+    try:
+        size_in_mb = size_in_bytes / (1024 * 1024)
+        if size_in_mb >= 1024:
+            return f"{size_in_mb / 1024:.2f} GB"
+        return f"{size_in_mb:.2f} MB"
+    except Exception:
+        return "0 MB"
+
+
+# ----------------------------------------------------------
+# FORMAT TIME (SECONDS → HR:MIN)
+# ----------------------------------------------------------
+def format_time_duration(seconds):
+    """Convert seconds to hours and minutes."""
+    try:
+        hours = seconds // 3600
+        minutes = (seconds % 3600) // 60
+        return f"{int(hours)}h {int(minutes)}m"
+    except Exception:
+        return "0h 0m"
+
+
+# ----------------------------------------------------------
+# REPORT GENERATION (OPTIONAL)
+# ----------------------------------------------------------
+def generate_report_filename(report_type):
+    """Generate timestamped report filename."""
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    return f"{report_type}_report_{timestamp}.csv"
+
+
+# ----------------------------------------------------------
+# HASH UTILITY (for tokens or file names)
+# ----------------------------------------------------------
+def create_hash(value):
+    """Create MD5 hash for any string."""
+    return hashlib.md5(value.encode()).hexdigest()
