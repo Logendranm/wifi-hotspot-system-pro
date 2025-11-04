@@ -10,16 +10,42 @@ auth_bp = Blueprint('auth', __name__)
 # ----------------------------------------------------------
 # INDEX / LOGIN PAGE
 # ----------------------------------------------------------
-@auth_bp.route('/')
-def index():
-    if 'user_id' in session:
-        user = User.get_by_id(session['user_id'])
-        if user:
-            if user['role'] == 'admin':
-                return redirect(url_for('admin.dashboard'))
-            else:
-                return redirect(url_for('user.dashboard'))
+@auth_bp.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        login_type = request.form.get('login_type', 'password')
+
+        # 🔹 Voucher login case
+        if login_type == 'voucher':
+            return handle_voucher_login(request.form.get('voucher_code'))
+
+        # 🔹 Try username or email
+        user = User.get_by_username(username) or User.get_by_email(username)
+
+        if user and verify_password(password, user['password_hash']):
+            if user['status'] != 'active':
+                flash('Account is suspended. Please contact admin.', 'error')
+                return render_template('login.html')
+
+            # 🔹 Set session details
+            session['user_id'] = user['id']
+            session['username'] = user['username']
+            session['role'] = user['role']
+
+            log_action(user['id'], 'login', "Login successful", request.remote_addr)
+
+            # 🔹 Redirect based on role (✅ fixed the syntax here)
+            return redirect(
+                url_for('admin.dashboard') if user['role'] == 'admin' else url_for('user.dashboard')
+            )
+
+        else:
+            flash('Invalid username or password', 'error')
+
     return render_template('login.html')
+
 
 
 # ----------------------------------------------------------
@@ -174,4 +200,5 @@ def logout():
     session.clear()
     flash('Logged out successfully', 'success')
     return redirect(url_for('auth.login'))
+
 
