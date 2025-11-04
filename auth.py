@@ -38,22 +38,21 @@ def login():
         # Try username OR email
         user = User.get_by_username(username) or User.get_by_email(username)
 
-        if user and verify_password(password, user['password_hash']):
-            if user['status'] != 'active':
-                flash('Account is suspended. Please contact admin.', 'error')
-                return render_template('login.html')
+       if user and verify_password(password, user['password_hash']):
+    if user['status'] != 'active':
+        flash('Account is suspended. Please contact admin.', 'error')
+        return render_template('login.html')
 
-            # Set session
-            session['user_id'] = user['id']
-            session['username'] = user['username']
-            session['role'] = user['role']
+    session['user_id'] = user['id']
+    session['username'] = user['username']
+    session['role'] = user['role']
 
-            log_action(user['id'], 'login', "Login successful", request.remote_addr)
+    log_action(user['id'], 'login', "Login successful", request.remote_addr)
 
-            # ✅ Fixed syntax here
-            return redirect(
-                url_for('admin.dashboard') if user['role'] == 'admin' else url_for('user.dashboard')
-            )
+    return redirect(
+        url_for('admin.dashboard') if user['role'] == 'admin' else url_for('user.dashboard')
+    )
+
         else:
             flash('Invalid username or password', 'error')
 
@@ -175,3 +174,4 @@ def logout():
     session.clear()
     flash('Logged out successfully', 'success')
     return redirect(url_for('auth.login'))
+
